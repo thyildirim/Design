@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
-from .serializers import RegisterSerializer, LoginSerializer, SecretSerializer
+from .serializers import RegisterSerializer, LoginSerializer
 from .dto import register_request_schema, login_request_schema
 
 @swagger_auto_schema(method='post', request_body=register_request_schema)
@@ -40,7 +40,7 @@ def logout_view(request):
     logout(request)
     return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
 
-@swagger_auto_schema(method='get', responses={200: SecretSerializer})
+@swagger_auto_schema(method='get')
 @api_view(['GET'])
 def secret_view(request):
     if not request.user.is_authenticated:
