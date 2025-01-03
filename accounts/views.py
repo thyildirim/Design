@@ -45,3 +45,7 @@ def secret_view(request):
         if serializer.is_valid():
             return Response(serializer.data, status=status.HTTP_200_OK)
     return Response({'message': 'You must be logged in to access this endpoint'}, status=status.HTTP_403_FORBIDDEN)
+
+@api_view(['GET'])
+def ping(request):
+    return Response({'message': 'pong'}, status=status.HTTP_200_OK)
