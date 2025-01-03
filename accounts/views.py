@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from .serializers import RegisterSerializer, LoginSerializer, SecretSerializer
-from dto import register_request_schema, login_request_schema
+from .dto import register_request_schema, login_request_schema
 
 @swagger_auto_schema(method='post', request_body=register_request_schema)
 @api_view(['POST'])
