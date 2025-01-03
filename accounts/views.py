@@ -14,7 +14,7 @@ def register(request):
     serializer = RegisterSerializer(data=request.data)
     if not serializer.is_valid():
         error_messages = [f"{field}: {' '.join(errors)}" for field, errors in serializer.errors.items()]
-        error_message_str = ", ".join(error_messages)
+        error_message_str = "\n".join(error_messages)
         return Response({'message' : error_message_str}, status=status.HTTP_400_BAD_REQUEST)
     serializer.save()
     return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
