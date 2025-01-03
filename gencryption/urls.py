@@ -24,9 +24,6 @@ schema_view = get_schema_view(
         title="Gencryption API",
         default_version='v1',
         description="API documentation for Gencryption",
-        terms_of_service="https://www.gencryption.com/terms/",
-        contact=openapi.Contact(email="support@gencryption.com"),
-        license=openapi.License(name="MIT License"),
     ),
     public=True,
 )
