@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4000:8000"
+    depends_on:
+      - db
+    environment:
+      - DB_ENGINE=django.db.backends.postgresql
+      - DB_NAME=gencryption
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
+      - DB_PORT=5432
+    networks:
+      - gencryption
+
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: gencryption
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - gencryption
+
+volumes:
+  postgres_data:
+
+networks:
+  gencryption:
+    driver: bridge
