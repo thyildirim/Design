@@ -4,24 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from .serializers import RegisterSerializer, LoginSerializer, SecretSerializer
-from drf_yasg import openapi
-
-register_request_schema = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    properties={
-        'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username for the user'),
-        'email': openapi.Schema(type=openapi.TYPE_STRING, description='Email address of the user'),
-        'password': openapi.Schema(type=openapi.TYPE_STRING, description='Password for the user', format=openapi.FORMAT_PASSWORD)
-    },
-)
-
-login_request_schema = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    properties={
-        'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username'),
-        'password': openapi.Schema(type=openapi.TYPE_STRING, description='Password', format=openapi.FORMAT_PASSWORD)
-    },
-)
+from dto import register_request_schema, login_request_schema
 
 @swagger_auto_schema(method='post', request_body=register_request_schema)
 @api_view(['POST'])
