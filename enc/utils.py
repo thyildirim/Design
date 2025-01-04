@@ -7,9 +7,9 @@ import base64
 class PaillierHE:
     def __init__(self):
         # self.public_key, self.private_key = paillier.generate_paillier_keypair()
-        with open('pailler_public_key.json', 'r') as f:
+        with open('./enc/pailler_public_key.json', 'r') as f:
             public_key_str = f.read()
-        with open('pailler_private_key.json', 'r') as f:
+        with open('./enc/pailler_private_key.json', 'r') as f:
             private_key_str = f.read()
         self.import_keys(public_key_str, private_key_str)
 
