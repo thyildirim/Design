@@ -1,8 +1,5 @@
 import json
 from phe import paillier
-import os
-import tenseal as ts
-import base64
 
 class PaillierHE:
     def __init__(self):
