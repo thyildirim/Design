@@ -68,20 +68,16 @@ def encrypt_and_save(request):
         gene_name = data.get('gene_name')
         gene_description = data.get('gene_description')
 
-
         # Initialize PaillierHE for encryption
         paillier = PaillierHE()
 
         # Encrypt the sequence
-        encrypted_sequence = paillier.encrypt(sequence)
-
-        # Encode the encrypted data as a string for storage
-        encrypted_sequence_str = base64.b64encode(encrypted_sequence.ciphertext(False).encode()).decode()
+        encrypted_sequence = paillier.encrypt(int(sequence))
 
         # Save to database
         enc_instance = Enc.objects.create(
             sequence=sequence,
-            encrypted_sequence=encrypted_sequence_str,
+            encrypted_sequence=encrypted_sequence,
             length=length,
             gc_content=gc_content,
             gene_name=gene_name,
@@ -94,7 +90,7 @@ def encrypt_and_save(request):
                 'data': {
                     'id': enc_instance.id,
                     'sequence': sequence,
-                    'encrypted_sequence': encrypted_sequence_str,
+                    'encrypted_sequence': encrypted_sequence,
                     'length': length,
                     'gc_content': gc_content,
                     'gene_name': gene_name,

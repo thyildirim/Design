@@ -11,7 +11,7 @@ class PaillierHE:
         self.import_keys(public_key_str, private_key_str)
 
     def encrypt(self, number):
-        return self.public_key.encrypt(number)
+        return self.public_key.encrypt(number).ciphertext(be_secure=True)
 
     def decrypt(self, encrypted_number):
         return self.private_key.decrypt(encrypted_number)
