@@ -1,6 +1,5 @@
-import os
+from phe import EncryptedNumber
 from django.core.management.base import BaseCommand
-from django.conf import settings
 
 from enc.utils import PaillierHE
 
@@ -47,8 +46,7 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.ERROR("You must provide an encrypted value to decrypt."))
                 return
             try:
-                encrypted_number = eval(encrypted)  # Convert string to encrypted number object
-                decrypted_value = he.decrypt(encrypted_number)
+                decrypted_value = he.decrypt(encrypted)
                 self.stdout.write(self.style.SUCCESS(f"Decrypted Value: {decrypted_value}"))
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f"Failed to decrypt: {e}"))
