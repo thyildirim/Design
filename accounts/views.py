@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from .serializers import RegisterSerializer, LoginSerializer
@@ -44,9 +45,8 @@ def logout_view(request):
 
 @swagger_auto_schema(method='get')
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def secret_view(request):
-    if not request.user.is_authenticated:
-        return Response({'message': 'You must be logged in to access this endpoint'}, status=status.HTTP_403_FORBIDDEN)
     return Response({'message': 'This is a secret message!'}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
