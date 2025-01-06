@@ -1,4 +1,3 @@
-from phe import EncryptedNumber
 from django.core.management.base import BaseCommand
 
 from enc.utils import PaillierHE
