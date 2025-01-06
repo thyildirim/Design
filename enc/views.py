@@ -8,6 +8,11 @@ from .models import Enc
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+def dna_to_number(sequence):
+    # DNA bazlarını sayılara dönüştür
+    mapping = {'A': '1', 'T': '2', 'G': '3', 'C': '4'}
+    number_string = ''.join(mapping[base] for base in sequence.upper())
+    return int(number_string)
 
 # Define OpenAPI schema for the input and output
 encrypt_and_save_request_schema = openapi.Schema(
@@ -68,16 +73,22 @@ def encrypt_and_save(request):
         gene_name = data.get('gene_name')
         gene_description = data.get('gene_description')
 
+        # DNA dizisini sayıya çevir
+        sequence_number = dna_to_number(sequence)
+        
         # Initialize PaillierHE for encryption
         paillier = PaillierHE()
 
         # Encrypt the sequence
-        encrypted_sequence = paillier.encrypt(int(sequence))
+        encrypted_sequence = paillier.encrypt(sequence_number)
+        
+        # JSON serileştirme için encrypted_sequence'ı stringe çevir
+        encrypted_sequence_str = str(encrypted_sequence)
 
         # Save to database
         enc_instance = Enc.objects.create(
             sequence=sequence,
-            encrypted_sequence=encrypted_sequence,
+            encrypted_sequence=encrypted_sequence_str,
             length=length,
             gc_content=gc_content,
             gene_name=gene_name,
@@ -90,7 +101,7 @@ def encrypt_and_save(request):
                 'data': {
                     'id': enc_instance.id,
                     'sequence': sequence,
-                    'encrypted_sequence': encrypted_sequence,
+                    'encrypted_sequence': encrypted_sequence_str,
                     'length': length,
                     'gc_content': gc_content,
                     'gene_name': gene_name,

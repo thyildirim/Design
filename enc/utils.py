@@ -19,12 +19,15 @@ class PaillierHE:
         encrypted_str:str = base64.b64encode(ciphertext_bytes).decode('utf-8')
         return encrypted_str
 
-    def decrypt(self, encrypted_str: str) -> int:
+    def decrypt(self, encrypted_str: str) -> str:
+        # Önce mevcut decrypt metoduyla sayıya çevirelim
         encrypted_bytes: bytes = base64.b64decode(encrypted_str)
         encrypted_int: int = int.from_bytes(encrypted_bytes, byteorder='big')
         encrypted: EncryptedNumber = EncryptedNumber(self.public_key, encrypted_int)
         decrypted_number: int = self.private_key.decrypt(encrypted)
-        return decrypted_number
+        
+        # Sayıyı DNA dizisine çevir
+        return self.number_to_dna(decrypted_number)
 
     def export_keys(self):
         public_key_str = json.dumps({
@@ -47,3 +50,10 @@ class PaillierHE:
             int(private_key_data['p']),
             int(private_key_data['q'])
         )
+
+    def number_to_dna(self, number):
+        # Sayıyı string'e çevir
+        number_string = str(number)
+        # DNA bazlarına geri dönüştür
+        mapping = {'1': 'A', '2': 'T', '3': 'G', '4': 'C'}
+        return ''.join(mapping[digit] for digit in number_string)

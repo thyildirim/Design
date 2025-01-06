@@ -1,11 +1,14 @@
-from phe import EncryptedNumber
 from django.core.management.base import BaseCommand
-
 from enc.utils import PaillierHE
 
+def dna_to_number(sequence):
+    # DNA bazlarını sayılara dönüştür
+    mapping = {'A': '1', 'T': '2', 'G': '3', 'C': '4'}
+    number_string = ''.join(mapping[base] for base in sequence.upper())
+    return int(number_string)
 
 class Command(BaseCommand):
-    help = 'Encrypt or decrypt a number using the Paillier Homomorphic Encryption scheme'
+    help = 'Encrypt or decrypt DNA sequences using Paillier cryptosystem'
 
     def add_arguments(self, parser):
         parser.add_argument(
