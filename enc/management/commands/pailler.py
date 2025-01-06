@@ -1,3 +1,4 @@
+from phe import EncryptedNumber
 from django.core.management.base import BaseCommand
 from enc.utils import PaillierHE
 
@@ -12,25 +13,46 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--number',
-            type=float,
-            required=False,
-            help='The number to encrypt (required for encryption)',
+            'action',
+            type=str,
+            choices=['encrypt', 'decrypt'],
+            help='Specify the operation: encrypt or decrypt',
+        )
+        parser.add_argument(
+            '--sequence',
+            type=str,
+            help='DNA sequence to encrypt/decrypt (use A, T, G, C)',
         )
 
     def handle(self, *args, **options):
-        number = options.get('number')
-
+        action = options['action']
+        sequence = options.get('sequence')
         he = PaillierHE()
 
-        if number is None:
-            self.stdout.write(self.style.ERROR("You must provide a number to encrypt."))
-            return
-        encrypted_value = he.encrypt(number)
-        self.stdout.write(self.style.SUCCESS(f"Encrypted Value: {encrypted_value}"))
+        if action == 'encrypt':
+            if not sequence or not all(base in 'ATGC' for base in sequence.upper()):
+                self.stdout.write(self.style.ERROR('Please provide a valid DNA sequence using only A, T, G, C'))
+                return
+            
+            # DNA dizisini sayıya çevir
+            number = dna_to_number(sequence)
+            encrypted_value = he.encrypt(number)
+            self.stdout.write(self.style.SUCCESS(f'Original DNA: {sequence}'))
+            self.stdout.write(self.style.SUCCESS(f'Encrypted: {encrypted_value}'))
 
-        try:
-            decrypted_value = he.decrypt(encrypted_value)
-            self.stdout.write(self.style.SUCCESS(f"Decrypted Value: {decrypted_value}"))
-        except Exception as e:
-            self.stdout.write(self.style.ERROR(f"Failed to decrypt: {e}"))
+            try:
+                decrypted_value = he.decrypt(encrypted_value)
+                self.stdout.write(self.style.SUCCESS(f'Decrypted DNA: {decrypted_value}'))
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f'Failed to decrypt: {e}'))
+
+        elif action == 'decrypt':
+            if not sequence:
+                self.stdout.write(self.style.ERROR('Please provide an encrypted sequence'))
+                return
+            
+            try:
+                decrypted_value = he.decrypt(sequence)
+                self.stdout.write(self.style.SUCCESS(f'Decrypted DNA: {decrypted_value}'))
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f'Failed to decrypt: {e}'))
