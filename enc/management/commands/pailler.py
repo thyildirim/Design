@@ -9,44 +9,25 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            'operation',
-            type=str,
-            choices=['encrypt', 'decrypt'],
-            help='Specify the operation: encrypt or decrypt',
-        )
-        parser.add_argument(
             '--number',
             type=float,
             required=False,
             help='The number to encrypt (required for encryption)',
         )
-        parser.add_argument(
-            '--encrypted',
-            type=str,
-            required=False,
-            help='The encrypted value to decrypt (required for decryption)',
-        )
 
     def handle(self, *args, **options):
-        operation = options['operation']
         number = options.get('number')
-        encrypted = options.get('encrypted')
 
         he = PaillierHE()
 
-        if operation == 'encrypt':
-            if number is None:
-                self.stdout.write(self.style.ERROR("You must provide a number to encrypt."))
-                return
-            encrypted_value = he.encrypt(number)
-            self.stdout.write(self.style.SUCCESS(f"Encrypted Value: {encrypted_value}"))
+        if number is None:
+            self.stdout.write(self.style.ERROR("You must provide a number to encrypt."))
+            return
+        encrypted_value = he.encrypt(number)
+        self.stdout.write(self.style.SUCCESS(f"Encrypted Value: {encrypted_value}"))
 
-        elif operation == 'decrypt':
-            if encrypted is None:
-                self.stdout.write(self.style.ERROR("You must provide an encrypted value to decrypt."))
-                return
-            try:
-                decrypted_value = he.decrypt(encrypted)
-                self.stdout.write(self.style.SUCCESS(f"Decrypted Value: {decrypted_value}"))
-            except Exception as e:
-                self.stdout.write(self.style.ERROR(f"Failed to decrypt: {e}"))
+        try:
+            decrypted_value = he.decrypt(encrypted_value)
+            self.stdout.write(self.style.SUCCESS(f"Decrypted Value: {decrypted_value}"))
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f"Failed to decrypt: {e}"))
