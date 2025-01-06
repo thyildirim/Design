@@ -16,7 +16,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        number = options.get('number')
+        number = int(options.get('number'))
 
         he = PaillierHE()
 
