@@ -12,7 +12,7 @@ class PaillierHE:
         self.import_keys(public_key_str, private_key_str)
 
     def encrypt(self, number: int) -> str:
-        encrypted: paillier.EncryptedNumber = self.public_key.encrypt(number)
+        encrypted: EncryptedNumber = self.public_key.encrypt(number)
         ciphertext: int = encrypted.ciphertext()
         byte_length = (ciphertext.bit_length() + 7) // 8
         ciphertext_bytes: bytes = ciphertext.to_bytes(byte_length, byteorder='big')
@@ -22,7 +22,7 @@ class PaillierHE:
     def decrypt(self, encrypted_str: str) -> int:
         encrypted_bytes: bytes = base64.b64decode(encrypted_str)
         encrypted_int: int = int.from_bytes(encrypted_bytes, byteorder='big')
-        encrypted: paillier.EncryptedNumber = paillier.EncryptedNumber(self.public_key, encrypted_int)
+        encrypted: EncryptedNumber = EncryptedNumber(self.public_key, encrypted_int)
         decrypted_number: int = self.private_key.decrypt(encrypted)
         return decrypted_number
 
