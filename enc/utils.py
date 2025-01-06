@@ -1,6 +1,6 @@
 import base64
 import json
-from phe import paillier
+from phe import paillier, EncryptedNumber
 
 class PaillierHE:
     def __init__(self):
@@ -11,16 +11,20 @@ class PaillierHE:
             private_key_str = f.read()
         self.import_keys(public_key_str, private_key_str)
 
-    def encrypt(self, number):
-        encrypted = self.public_key.encrypt(number)
-        ciphertext_bytes = encrypted.ciphertext().to_bytes((encrypted.ciphertext().bit_length() + 7) // 8, byteorder='big')
-        return base64.b64encode(ciphertext_bytes).decode('utf-8')
+    def encrypt(self, number: int) -> str:
+        encrypted: EncryptedNumber = self.public_key.encrypt(number)
+        ciphertext: int = encrypted.ciphertext()
+        byte_length = (ciphertext.bit_length() + 7) // 8
+        ciphertext_bytes: bytes = ciphertext.to_bytes(byte_length, byteorder='big')
+        encrypted_str:str = base64.b64encode(ciphertext_bytes).decode('utf-8')
+        return encrypted_str
 
-    def decrypt(self, encrypted_str):
-        encrypted_bytes = base64.b64decode(encrypted_str)
-        encrypted_int = int.from_bytes(encrypted_bytes, byteorder='big')
-        encrypted = paillier.EncryptedNumber(self.public_key, encrypted_int)
-        return self.private_key.decrypt(encrypted)
+    def decrypt(self, encrypted_str: str) -> int:
+        encrypted_bytes: bytes = base64.b64decode(encrypted_str)
+        encrypted_int: int = int.from_bytes(encrypted_bytes, byteorder='big')
+        encrypted: EncryptedNumber = EncryptedNumber(self.public_key, encrypted_int)
+        decrypted_number: int = self.private_key.decrypt(encrypted)
+        return decrypted_number
 
     def export_keys(self):
         public_key_str = json.dumps({
