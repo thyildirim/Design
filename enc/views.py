@@ -1,104 +1,102 @@
-import base64
-from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render
 from django.http import JsonResponse
-from rest_framework.decorators import api_view
-from rest_framework import status
+from django.views.decorators.csrf import csrf_exempt
+from enc.models import Enc
 from enc.utils import PaillierHE
-from .models import Enc
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
+import json
 
+def dna_to_number(sequence):
+    # DNA dizisini sayıya çevirme
+    mapping = {'A': '1', 'T': '2', 'G': '3', 'C': '4'}
+    number_string = ''.join(mapping[base] for base in sequence.upper())
+    return int(number_string)
 
-# Define OpenAPI schema for the input and output
-encrypt_and_save_request_schema = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    properties={
-        'sequence': openapi.Schema(type=openapi.TYPE_STRING, description="DNA sequence to encrypt"),
-        'length': openapi.Schema(type=openapi.TYPE_INTEGER, description="Length of the DNA sequence"),
-        'gc_content': openapi.Schema(type=openapi.TYPE_NUMBER, format=openapi.FORMAT_FLOAT, description="GC content percentage"),
-        'gene_name': openapi.Schema(type=openapi.TYPE_STRING, description="Name of the gene", nullable=True),
-        'gene_description': openapi.Schema(type=openapi.TYPE_STRING, description="Description of the gene", nullable=True),
-    },
-    required=['sequence', 'length'],
-)
-
-encrypt_and_save_response_schema = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    properties={
-        'message': openapi.Schema(type=openapi.TYPE_STRING, description="Response message"),
-        'data': openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'id': openapi.Schema(type=openapi.TYPE_INTEGER, description="ID of the saved record"),
-                'sequence': openapi.Schema(type=openapi.TYPE_STRING, description="Original DNA sequence"),
-                'encrypted_sequence': openapi.Schema(type=openapi.TYPE_STRING, description="Encrypted DNA sequence"),
-                'length': openapi.Schema(type=openapi.TYPE_INTEGER, description="Length of the DNA sequence"),
-                'gc_content': openapi.Schema(type=openapi.TYPE_NUMBER, format=openapi.FORMAT_FLOAT, description="GC content percentage"),
-                'gene_name': openapi.Schema(type=openapi.TYPE_STRING, description="Name of the gene"),
-                'gene_description': openapi.Schema(type=openapi.TYPE_STRING, description="Description of the gene"),
-            },
-        ),
-    },
-)
-
-@swagger_auto_schema(
-    method='post',
-    operation_summary="Encrypt and save DNA sequence",
-    operation_description="Encrypt a DNA sequence using Paillier encryption and save it to the database.",
-    request_body=encrypt_and_save_request_schema,
-    responses={
-        201: encrypt_and_save_response_schema,
-        400: openapi.Schema(type=openapi.TYPE_OBJECT, properties={
-            'message': openapi.Schema(type=openapi.TYPE_STRING, description="Error message"),
-        }),
-        500: openapi.Schema(type=openapi.TYPE_OBJECT, properties={
-            'message': openapi.Schema(type=openapi.TYPE_STRING, description="Error message"),
-        }),
-    },
-)
 @csrf_exempt
-@api_view(['POST'])
-def encrypt_and_save(request):
-    try:
-        # Parse input data
-        data = request.data
-        sequence = data.get('sequence')
-        length = data.get('length')
-        gc_content = data.get('gc_content')
-        gene_name = data.get('gene_name')
-        gene_description = data.get('gene_description')
+def number_to_dna(number):
+    # Sayıyı DNA dizisine çevirme
+    mapping = {1: 'A', 2: 'T', 3: 'G', 4: 'C'}
+    number_str = str(number)
+    return ''.join(mapping[int(digit)] for digit in number_str)
 
-        # Initialize PaillierHE for encryption
-        paillier = PaillierHE()
+def homo_encrypt(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            sequence = data.get('sequence')
+            gene_name = data.get('gene_name', 'Unknown')
 
-        # Encrypt the sequence
-        encrypted_sequence = paillier.encrypt(int(sequence))
+            # Geçerli DNA dizisi olup olmadığını kontrol et
+            if not sequence or not all(base in 'ATGC' for base in sequence.upper()):
+                return JsonResponse({'error': 'Invalid DNA sequence'}, status=400)
 
-        # Save to database
-        enc_instance = Enc.objects.create(
-            sequence=sequence,
-            encrypted_sequence=encrypted_sequence,
-            length=length,
-            gc_content=gc_content,
-            gene_name=gene_name,
-            gen_description=gene_description
-        )
+            # Şifreleme işlemi
+            number = dna_to_number(sequence)
+            he = PaillierHE()
+            encrypted_value = he.encrypt(number)
 
-        return JsonResponse(
-            {
-                'message': 'Data encrypted and saved successfully.',
-                'data': {
-                    'id': enc_instance.id,
-                    'sequence': sequence,
-                    'encrypted_sequence': encrypted_sequence,
-                    'length': length,
-                    'gc_content': gc_content,
-                    'gene_name': gene_name,
-                    'gene_description': gene_description,
-                }
-            },
-            status=status.HTTP_201_CREATED
-        )
+            return JsonResponse({
+                'encrypted': encrypted_value,
+                'gene_name': gene_name,
+                'original_sequence': sequence
+            })
 
-    except Exception as e:
-        return JsonResponse({'message': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+def save_encrypted_data(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+
+            sequence = data.get('sequence')
+            encrypted_sequence = data.get('encrypted_sequence')
+            gene_name = data.get('gene_name')
+            description = data.get('description')
+
+            # Veritabanına kaydetme
+            enc_instance = Enc(
+                sequence=sequence,
+                encrypted_sequence=encrypted_sequence,
+                gene_name=gene_name,
+                gen_description=description
+            )
+            enc_instance.save()
+
+            return JsonResponse({'message': 'Data successfully saved'}, status=200)
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+    
+def decrypt_data(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            encrypted_value = data.get('encrypted_value')
+
+            # Homomorfik şifre çözme işlemi
+            he = PaillierHE()
+            decrypted_value = he.decrypt(encrypted_value)
+
+            if decrypted_value is None:
+                # Eğer şifre çözülemiyorsa, anlamlı bir hata mesajı döndürüyoruz
+                return JsonResponse({'error': 'Şifre çözülemedi. Şifre yanlış olabilir.'}, status=400)
+
+            # Sayıyı DNA dizisine dönüştürme
+            decrypted_dna = number_to_dna(decrypted_value)
+
+            # Çözümlenen DNA dizisini geri gönder
+            return JsonResponse({
+                'decrypted': decrypted_dna,
+            }, status=200)
+
+        except Exception as e:
+            # Genel bir hata ile karşılaşıldığında 500 hatası döndürüyoruz
+            return JsonResponse({'error': 'Internal Server Error: ' + str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)

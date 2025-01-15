@@ -33,4 +33,6 @@ urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0)),
     path('auth/', include('accounts.urls')),
     path('enc/', include('enc.urls')),
+    path('honey/',include('honey.urls')),
+    path('rsa/',include('rsaenc.urls'))
 ]

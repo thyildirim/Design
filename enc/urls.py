@@ -1,6 +1,9 @@
 from django.urls import path
-from .views import encrypt_and_save
+from enc import views
 
 urlpatterns = [
-    path('encrypt-and-save/', encrypt_and_save, name='encrypt_and_save'),
+    path('homo_sifre/', views.homo_encrypt, name=''),
+    path('save_encrypted_data/', views.save_encrypted_data, name='save_encrypted_data'),
+    path('decrypt_data/', views.decrypt_data, name='decrypt_data'),
+
 ]

@@ -55,6 +55,8 @@ INSTALLED_APPS = [
     'drf_yasg',
     'accounts',
     'enc',
+    'honey',
+    'rsaenc'
 ]
 
 MIDDLEWARE = [
@@ -72,14 +74,17 @@ ROOT_URLCONF = 'gencryption.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],  # Gerekirse projenizin templates yolunu ekleyin
+
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+                'django.contrib.messages.context_processors.messages',  
+                'django.template.context_processors.csrf',  # CSRF koruma için gerekli
+
             ],
         },
     },

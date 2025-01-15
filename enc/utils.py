@@ -1,7 +1,7 @@
 import base64
 import json
 from phe import paillier, EncryptedNumber
-
+#python manage.py pailler --number 42
 class PaillierHE:
     def __init__(self):
         # self.public_key, self.private_key = paillier.generate_paillier_keypair()
@@ -47,3 +47,11 @@ class PaillierHE:
             int(private_key_data['p']),
             int(private_key_data['q'])
         )
+
+    def number_to_dna(number):
+        # Sayıları DNA bazlarına dönüştür
+        mapping = {'1': 'A', '2': 'T', '3': 'G', '4': 'C'}
+        number_string = str(number)
+        dna_sequence = ''.join(mapping[digit] for digit in number_string)
+        return dna_sequence
+
