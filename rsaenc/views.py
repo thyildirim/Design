@@ -79,6 +79,21 @@ class RSAEncryption:
         decrypted_message = cipher.decrypt(encrypted_message).decode('utf-8')
         return decrypted_message
 
+    def decrypt_message_view(request):
+        if request.method == 'POST':
+            try:
+                data = json.loads(request.body)
+                encrypted_message_base64 = data.get('encrypted_message', '')
+                
+                rsa = RSAEncryption()
+                rsa.generate_keys()  # Ensure keys are generated or imported
+                decrypted_message = rsa.decrypt_message(encrypted_message_base64)
+                
+                return JsonResponse({'decrypted_message': decrypted_message})
+            except Exception as e:
+                return JsonResponse({'error': str(e)}, status=400)
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
 if __name__ == "__main__":
     rsa = RSAEncryption()
 
