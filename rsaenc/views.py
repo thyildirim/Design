@@ -12,17 +12,11 @@ class RSAEncryption:
         self.public_key = None
 
     def generate_keys(self):
-        """Generates a new RSA key pair and stores them as Base64 encoded strings."""
-        key = RSA.generate(2048)
-        self.private_key = base64.b64encode(key.export_key()).decode('utf-8')
-        self.public_key = base64.b64encode(key.publickey().export_key()).decode('utf-8')
+        with open('private.pem', 'r') as f:
+            self.private_key = f.read()
+        with open('public.pem', 'r') as f:
+            self.public_key = f.read()
 
-    def import_keys(self, private_key=None, public_key=None):
-        """Imports Base64 encoded RSA keys."""
-        if private_key:
-            self.private_key = private_key
-        if public_key:
-            self.public_key = public_key
 
     def encrypt_view(request):
        if request.method == 'POST':
