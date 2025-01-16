@@ -30,7 +30,7 @@ class RSAEncryption:
                data = json.loads(request.body)
                sequence = data.get('sequence', '')
                rsa = RSAEncryption()
-               rsa.generate_keys()  # Ensure keys are generated or imported
+               rsa.generate_keys()  
                encrypted_sequence = rsa.encrypt_message(sequence)
                return JsonResponse({'encrypted_data': encrypted_sequence})
            except Exception as e:
@@ -38,6 +38,16 @@ class RSAEncryption:
        return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
+
+    def encrypt_message(self, message):
+        """Encrypts a message using the public key."""
+        if not self.public_key:
+            raise ValueError("Public key is not set.")
+        public_key = RSA.import_key(base64.b64decode(self.public_key))
+        cipher = PKCS1_OAEP.new(public_key)
+        encrypted_message = cipher.encrypt(message.encode('utf-8'))
+        # Encode the encrypted message in Base64
+        return base64.b64encode(encrypted_message).decode('utf-8')
 
     def save_encrypted_dna(request):
         if request.method == 'POST':
