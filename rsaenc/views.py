@@ -54,12 +54,17 @@ class RSAEncryption:
             try:
                 data = json.loads(request.body)
                 sequence = data.get('sequence', '')
+                gen_description = data.get('gen_description', '')
+                gene_name = data.get('gene_name', '')
+
                 rsa = RSAEncryption()
                 rsa.generate_keys()  # Ensure keys are generated or imported
                 encrypted_sequence = rsa.encrypt_message(sequence)
                 
                 # Save to database
                 EncryptedDNA.objects.create(
+                    gene_name=gene_name,
+                    gen_description=gen_description,
                     sequence=sequence,
                     encrypted_sequence=encrypted_sequence
                 )
