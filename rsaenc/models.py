@@ -1,6 +1,6 @@
 from django.db import models
 
-class DNASequence(models.Model):
+class EncryptedDNA(models.Model):
     name = models.CharField(max_length=100)
     encrypted_dna = models.TextField()
 

@@ -1,6 +1,10 @@
 import base64
+import json
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
+from django.http import JsonResponse
+
+from rsaenc.models import EncryptedDNA
 
 class RSAEncryption:
     def __init__(self):
@@ -20,15 +24,40 @@ class RSAEncryption:
         if public_key:
             self.public_key = public_key
 
-    def encrypt_message(self, message):
-        """Encrypts a message using the public key."""
-        if not self.public_key:
-            raise ValueError("Public key is not set.")
-        public_key = RSA.import_key(base64.b64decode(self.public_key))
-        cipher = PKCS1_OAEP.new(public_key)
-        encrypted_message = cipher.encrypt(message.encode('utf-8'))
-        # Encode the encrypted message in Base64
-        return base64.b64encode(encrypted_message).decode('utf-8')
+    def encrypt_view(request):
+       if request.method == 'POST':
+           try:
+               data = json.loads(request.body)
+               sequence = data.get('sequence', '')
+               rsa = RSAEncryption()
+               rsa.generate_keys()  # Ensure keys are generated or imported
+               encrypted_sequence = rsa.encrypt_message(sequence)
+               return JsonResponse({'encrypted_data': encrypted_sequence})
+           except Exception as e:
+               return JsonResponse({'error': str(e)}, status=400)
+       return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+
+    def save_encrypted_dna(request):
+        if request.method == 'POST':
+            try:
+                data = json.loads(request.body)
+                sequence = data.get('sequence', '')
+                rsa = RSAEncryption()
+                rsa.generate_keys()  # Ensure keys are generated or imported
+                encrypted_sequence = rsa.encrypt_message(sequence)
+                
+                # Save to database
+                EncryptedDNA.objects.create(
+                    sequence=sequence,
+                    encrypted_sequence=encrypted_sequence
+                )
+                
+                return JsonResponse({'message': 'Data saved successfully'})
+            except Exception as e:
+                return JsonResponse({'error': str(e)}, status=400)
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
 
     def decrypt_message(self, encrypted_message_base64):
         """Decrypts a message using the private key."""

@@ -1,8 +1,7 @@
 from django.urls import path
-from rsaenc import views
+from . import views
+
 urlpatterns = [
-    path('encrypt/', views.encrypt_dna_view, name='dna_list'),
-
-
-
+    path('encrypt/', views.RSAEncryption.encrypt_view, name='encrypt_view'),
+    path('save-encrypted-dna/', views.RSAEncryption.save_encrypted_dna, name='save_encrypted_dna'),
 ]
