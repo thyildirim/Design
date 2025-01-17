@@ -6,6 +6,7 @@ from django.http import JsonResponse
 
 from rsaenc.models import EncryptedDNA
 
+
 class RSAEncryption:
     def __init__(self):
         self.private_key = None
